@@ -18,12 +18,19 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Extract verified game
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Extract and verify the session
         run: |
           python3 -m zipfile -e blue-hour.zip site
-          test -f site/index.html
-          test -f site/rider.js
-          test -f site/vendor/three.core.js
+          node --check site/slice.js
+        working-directory: .
+      - name: Test rider and progression
+        run: |
+          node site/tests/session.mjs
+          node site/tests/rider.mjs
+          rm -rf site/tests
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
